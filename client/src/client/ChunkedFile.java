@@ -14,7 +14,7 @@ import java.io.IOException;
 public class ChunkedFile {
 	
 	private FileInputStream m_internalStream;
-	private final int CHUNK_SIZE = 100;
+	private final int CHUNK_SIZE = 124;
 	
 	private int m_offset = 0;
 	private byte[] m_data;
@@ -45,7 +45,8 @@ public class ChunkedFile {
 		
 		if(this.m_offset + b.length > this.m_data.length) {
 			// TODO: Poor man's implementation, throttle hard!
-			length = 7;
+			length = 1;
+			b = new byte[length];
 		}
 		
 		// Copy our data into where need it to be

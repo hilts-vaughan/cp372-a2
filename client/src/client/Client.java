@@ -6,7 +6,7 @@ import java.net.*;
 
 public class Client {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 
 		System.out.println("Param Set: ");
 		for (String arg : args) {
@@ -66,9 +66,13 @@ public class Client {
 			e1.printStackTrace();
 			return;
 		}
+		
+		System.out.println("Sending on port " + portHost);
 
 		Boolean transmitComplete = false;
 
+		int chunksSent = 0;
+		
 		while (transmitComplete == false) {
 
 			if (chunkedFile.isDataLeft()) {
@@ -85,10 +89,13 @@ public class Client {
 				ReliablePacket packet = new ReliablePacket((byte) 0, payload);
 				payload = packet.getPacketPayload();
 
+				Thread.sleep(2);
+				
 				// Send our data
 				try {
 					socket.send(new DatagramPacket(payload, payload.length,
 							IPAddress, portHost));
+					chunksSent++;
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -100,7 +107,7 @@ public class Client {
 
 		}
 		
-		System.out.println("I blasted everything. Goodbye");
+		System.out.println("I blasted everything. Goodbye. Sent: " + chunksSent);
 
 		// Goodbye
 		socket.close();
