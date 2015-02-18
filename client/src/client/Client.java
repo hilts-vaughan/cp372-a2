@@ -1,7 +1,8 @@
 package client;
 
 import java.io.FileNotFoundException;
-import java.net.SocketException;
+import java.io.IOException;
+import java.net.*;
 
 public class Client {
 
@@ -35,6 +36,7 @@ public class Client {
 		}
 
 		// OK, we've extracted what we need. Moving on...
+		reliabilitySeed = 0;
 
 		ChunkedFile chunkedFile;
 		try {
@@ -54,10 +56,53 @@ public class Client {
 			System.out.println("The host could not be contacted. Aborting.");
 			return;
 		}
-	
+
+		// Get an IP address
+		InetAddress IPAddress;
+		try {
+			IPAddress = InetAddress.getByName(hostAddress);
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return;
+		}
+
+		Boolean transmitComplete = false;
+
+		while (transmitComplete == false) {
+
+			if (chunkedFile.isDataLeft()) {
+				byte[] payload;
+
+				try {
+					payload = chunkedFile.getByteChunk();
+				} catch (IOException exception) {
+					System.out.println("Oops... ran out of file!");
+					break;
+				}
+
+				// Create our packet
+				ReliablePacket packet = new ReliablePacket((byte) 0, payload);
+				payload = packet.getPacketPayload();
+
+				// Send our data
+				try {
+					socket.send(new DatagramPacket(payload, payload.length,
+							IPAddress, portHost));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else {
+				transmitComplete = true;
+			}
+
+		}
 		
+		System.out.println("I blasted everything. Goodbye");
+
 		// Goodbye
 		socket.close();
 	}
-
 }

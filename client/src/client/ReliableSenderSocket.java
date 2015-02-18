@@ -17,8 +17,5 @@ public class ReliableSenderSocket extends DatagramSocket {
 		super(port);	
 	}
 	
-	public void performConnection(String host, int port) throws SocketException {
-		this.connect(new InetSocketAddress(host, port));
-	}
 
 }
