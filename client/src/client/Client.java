@@ -89,6 +89,7 @@ public class Client {
 				ReliablePacket packet = new ReliablePacket((byte) 0, payload);
 				payload = packet.getPacketPayload();
 
+				// If you want to overflow your buffer, simply comment this
 				Thread.sleep(2);
 				
 				// Send our data
