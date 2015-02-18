@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 /**
@@ -38,6 +39,9 @@ public class Server {
 			return;
 		}
 		
+		portAck = 5001;
+		portData = 7000;
+		
 		// Try binding
 		DatagramSocket socket;
 		try {
@@ -57,6 +61,7 @@ public class Server {
 			return;
 		}
 
+		int expectedSeqNum = 0;
 		
 		// Loop forever
 		for( ;; ) {
@@ -73,8 +78,14 @@ public class Server {
 			}
 			
             byte[] data = packet.getData();
-            //System.out.println(data[2]);
-        
+ 
+            System.out.println("Packet recieved with sequence number: " + data[0]);
+            
+            // Just discard the packet if it's not what we expected
+            if(data[0] != expectedSeqNum)
+            	continue;
+          
+            
             for(int i = 3; i < 3 + data[2]; i++) {
             	try {
 					out.write(data[i]);
@@ -84,12 +95,43 @@ public class Server {
 				}
             }
             
+            
+
+			// Increment our sequence counter
+            expectedSeqNum = (byte) ((expectedSeqNum + 1) % 128);
+			
+            // Send our acknowledgement to the client listener
+            sendPacketAck(packet, socket, portAck);
+            
             out.flush();
         
+            
                                  
 		}
 		
 		
 	}
+	
+	
+	/**
+	 * Given a specific packet number, sends the acknowledgment for it
+	 * @param ackNumber
+	 * @throws IOException 
+	 */
+	private static void sendPacketAck(DatagramPacket packet, DatagramSocket socket, int ackPort) throws IOException {
+		// Send to the port specified by the client getting acknowledgements
+		int port = ackPort;
+		InetAddress address = packet.getAddress();
+		
+		// A single byte with the acknowledgment number
+		byte[] buffer = new byte[1];
+		buffer[0] = packet.getData()[0];
+		
+		DatagramPacket ackPacket = new DatagramPacket(buffer, buffer.length, address, port);
+		socket.send(ackPacket);
+		
+	}
+	
+	
 	
 }
