@@ -21,7 +21,7 @@ import java.net.SocketException;
 public class Server {
 
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		
 		String hostAddress = "";
 		int portAck = 0;
@@ -77,10 +77,13 @@ public class Server {
 				e.printStackTrace();
 			}
 			
+            
+            Thread.sleep(20);
+            
             byte[] data = packet.getData();
  
-            //System.out.println("Packet recieved with sequence number: " + data[0]);
-            
+            System.out.println("Packet recieved with sequence number: " + data[0]);
+            System.out.println("Expected... " + expectedSeqNum);
             // Just discard the packet if it's not what we expected
             if(data[0] != expectedSeqNum)
             	continue;
@@ -103,7 +106,7 @@ public class Server {
             // Send our acknowledgement to the client listener
             sendPacketAck(packet, socket, portAck);
             
-            out.flush();
+            // out.flush();
         
             
                                  

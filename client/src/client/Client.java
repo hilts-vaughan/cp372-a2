@@ -60,12 +60,12 @@ public class Client {
 		reliabilitySeed = 0;
 
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
-		windowSize = 1;
+		windowSize = 40;
 		
 		Thread t = new Thread(new AckListener(portHost, unackedPackets));
 		t.start();
 		
-
+		long startTime = System.currentTimeMillis();
 		
 
 		ChunkedFile chunkedFile;
@@ -176,12 +176,14 @@ public class Client {
 						
 						ReliablePacket packet = unackedPackets.get(key);
 						packet.setTimestamp(System.currentTimeMillis());
-						System.out.println("Retransmit: " + packet.getSequenceNumber());
+						//System.out.println(System.currentTimeMillis() / 10000 +  "|| Retransmit: " + packet.getSequenceNumber());
 						byte[] payload = packet.getPacketPayload();
 						socket.send(new DatagramPacket(payload, payload.length,
 								IPAddress, portClient));	
 						
 					}
+					
+					System.out.println(System.currentTimeMillis());
 					
 					// Reset timer
 					oldestPacketTime = System.currentTimeMillis();
@@ -201,6 +203,8 @@ public class Client {
 
 		// Kill ack listener
 		t.stop();
+		
+		System.out.println( (System.currentTimeMillis() - startTime)/1000 + "s");
 		
 		// Goodbye
 		socket.close();

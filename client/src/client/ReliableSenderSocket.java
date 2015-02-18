@@ -24,7 +24,7 @@ public class ReliableSenderSocket extends DatagramSocket {
 
 	@Override
 	public void send(java.net.DatagramPacket packet) throws IOException {
-		int die = getRandomInt(1, 100);
+		int die = getRandomInt(1, 500000);
 		
 		// Pseudo-lossy
 		if(die == 1)
