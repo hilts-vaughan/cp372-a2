@@ -21,7 +21,7 @@ public class ChunkedFile {
 	}
 	
 	/**
-	 * Returns the next few bytes in chunked increments availble from the
+	 * Returns the next few bytes in chunked increments available from the
 	 * filesystem to the caller.
 	 * @return	The chunked bytes
 	 * @throws IOException Throws if an I/O error occurs for some reason

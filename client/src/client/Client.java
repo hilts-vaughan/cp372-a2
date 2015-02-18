@@ -1,6 +1,7 @@
 package client;
 
 import java.io.FileNotFoundException;
+import java.net.SocketException;
 
 public class Client {
 
@@ -45,6 +46,18 @@ public class Client {
 		}
 
 		// OK, now we setup our socket and prepare to do some actual work
+		ReliableSenderSocket socket;
+
+		try {
+			socket = new ReliableSenderSocket(portClient);
+		} catch (SocketException exception) {
+			System.out.println("The host could not be contacted. Aborting.");
+			return;
+		}
+	
+		
+		// Goodbye
+		socket.close();
 	}
 
 }
