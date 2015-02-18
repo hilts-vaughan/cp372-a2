@@ -12,14 +12,24 @@ public class ReliablePacket {
 	
 	private byte m_sequenceNumber = 0;
 	private byte[] m_payload;
+	private long m_timestamp;
 	
-	public ReliablePacket(byte sequenceNumber, byte[] payload) {
+	public ReliablePacket(byte sequenceNumber, byte[] payload, long timestamp) {
 		this.m_payload = payload;
 		this.m_sequenceNumber = sequenceNumber;
+		this.m_timestamp = timestamp;
 	}
 	
 	public byte getSequenceNumber() {
 		return this.m_sequenceNumber;
+	}
+	
+	public long getTimestamp() {
+		return this.m_timestamp;
+	}
+	
+	public void setTimestamp(long time) {
+		this.m_timestamp = time;
 	}
 	
 	public byte[] getPacketPayload() {

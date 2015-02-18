@@ -79,7 +79,7 @@ public class Server {
 			
             byte[] data = packet.getData();
  
-            System.out.println("Packet recieved with sequence number: " + data[0]);
+            //System.out.println("Packet recieved with sequence number: " + data[0]);
             
             // Just discard the packet if it's not what we expected
             if(data[0] != expectedSeqNum)
