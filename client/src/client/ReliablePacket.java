@@ -14,10 +14,15 @@ public class ReliablePacket {
 	private byte[] m_payload;
 	private long m_timestamp;
 	
+	private long m_id = 0;
+	
+	private static long uId = 0;
+	
 	public ReliablePacket(byte sequenceNumber, byte[] payload, long timestamp) {
 		this.m_payload = payload;
 		this.m_sequenceNumber = sequenceNumber;
 		this.m_timestamp = timestamp;
+		this.m_id = uId++;
 	}
 	
 	public byte getSequenceNumber() {
@@ -30,6 +35,10 @@ public class ReliablePacket {
 	
 	public void setTimestamp(long time) {
 		this.m_timestamp = time;
+	}
+	
+	public long getUniqueId() {
+		return this.m_id;
 	}
 	
 	public byte[] getPacketPayload() {

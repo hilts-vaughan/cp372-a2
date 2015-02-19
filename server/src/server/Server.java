@@ -21,7 +21,7 @@ import java.net.SocketException;
 public class Server {
 
 	
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException {
 		
 		String hostAddress = "";
 		int portAck = 0;
@@ -77,9 +77,6 @@ public class Server {
 				e.printStackTrace();
 			}
 			
-            
-            Thread.sleep(20);
-            
             byte[] data = packet.getData();
  
             System.out.println("Packet recieved with sequence number: " + data[0]);

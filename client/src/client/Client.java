@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -60,7 +62,7 @@ public class Client {
 		reliabilitySeed = 0;
 
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
-		windowSize = 40;
+		windowSize = 10;
 		
 		Thread t = new Thread(new AckListener(portHost, unackedPackets));
 		t.start();
@@ -160,32 +162,29 @@ public class Client {
 				long delta = System.currentTimeMillis() - oldestPacketTime;
 				
 				if(delta > TIMEOUT) {
-					// Retransmit all our unacked packets
 					
-					ArrayList<Byte> keys = new ArrayList<Byte>();
+					// Sort by the unique creation ID so we guarentee the oldest packet will be sent 
+					// first without fail
+					List<ReliablePacket> packets = new ArrayList<ReliablePacket>(unackedPackets.values());
+										
+					Collections.sort(packets, new Comparator<ReliablePacket>(){
+					    public int compare(ReliablePacket s1, ReliablePacket s2) {
+					        return Long.compare(s1.getUniqueId(), s2.getUniqueId());	
+					    }
+					});
 					
-					for(ReliablePacket packet : unackedPackets.values()) {
-						
-	
-						keys.add(packet.getSequenceNumber());
-					}
 					
-					Collections.sort(keys);
-					
-					for(Byte key : keys) {
-						
-						ReliablePacket packet = unackedPackets.get(key);
+					// Resend our payload
+					for(ReliablePacket packet : packets) {						
 						packet.setTimestamp(System.currentTimeMillis());
-						//System.out.println(System.currentTimeMillis() / 10000 +  "|| Retransmit: " + packet.getSequenceNumber());
+						System.out.println(System.currentTimeMillis() / 10000 +  "|| Retransmit: " + packet.getSequenceNumber());
 						byte[] payload = packet.getPacketPayload();
 						socket.send(new DatagramPacket(payload, payload.length,
-								IPAddress, portClient));	
-						
+								IPAddress, portClient));				
 					}
 					
-					System.out.println(System.currentTimeMillis());
-					
 					// Reset timer
+					System.out.println(System.currentTimeMillis());					
 					oldestPacketTime = System.currentTimeMillis();
 				}
 				
