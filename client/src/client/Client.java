@@ -83,7 +83,7 @@ public class Client {
 			chunkedFile = new ChunkedFile(fileName);
 		} catch (FileNotFoundException exception) {
 			System.out
-					.println("The specified file provied could not be found. Exiting.");
+					.println("The specified file provied could not be found or loaded. Exiting.");
 			return;
 		}
 

@@ -88,6 +88,7 @@ public class Server {
 			if (data[0] == -1) {
 				sendPacketAck(packet, socket, portAck);
 				System.out.println("-1 received server shutting down");
+				out.close();
 				return;
 
 			}
