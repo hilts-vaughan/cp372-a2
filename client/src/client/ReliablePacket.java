@@ -1,7 +1,12 @@
 package client;
 
 /**
- * A reliable packet 
+ * A reliable packet implementation that encapsulates data for reliable
+ * file transfer over UDP. The sequence number, payload, and timestamp
+ * are recorded. Generally, a reliable packet is immutable with the exception
+ * of the timestamp.
+ * 
+ * Upon retransmission, the timestamp should be updated so the timer can ticked down.
  * 
  * @author Vaughan Hilts
  *
