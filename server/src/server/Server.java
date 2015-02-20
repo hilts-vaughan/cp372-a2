@@ -82,6 +82,13 @@ public class Server {
             System.out.println("Packet recieved with sequence number: " + data[0]);
             System.out.println("Expected... " + expectedSeqNum);
             // Just discard the packet if it's not what we expected
+            if(data[0] == -1){
+            	sendPacketAck(packet, socket, portAck);
+            	System.out.println("-1 received server shutting down");
+            	return;
+
+            }
+            
             if(data[0] != expectedSeqNum)
             	continue;
           
