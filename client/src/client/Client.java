@@ -207,10 +207,18 @@ public class Client {
 		unackedPackets.put((byte)-1,packet);
 		DatagramPacket terminate = new DatagramPacket(packet.getPacketPayload(), packet.getPacketPayload().length,
 				IPAddress, portClient);
+
+		long previous = System.currentTimeMillis();
+		socket.send(terminate);
 		while(unackedPackets.isEmpty()==false){
-			socket.send(terminate);
+			if(System.currentTimeMillis()-previous>TIMEOUT){
+				socket.send(terminate);
+				previous=System.currentTimeMillis();
+			}
 		}
 		// Kill ack listener
+		
+		
 		ack_listener.stop();
 		
 		System.out.println( (System.currentTimeMillis() - startTime)/1000 + "s");
