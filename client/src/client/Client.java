@@ -110,10 +110,12 @@ public class Client {
 
 		while (transmitComplete == false) {
 
-			// Ensure the ack check is proper
-			if (unackedPackets.values().size() < windowSize) {
+			// If there's data left, we can try and send it
+			if (chunkedFile.isDataLeft()) {
 
-				if (chunkedFile.isDataLeft()) {
+				// Only send if we can afford to
+				if (unackedPackets.values().size() < windowSize) {
+
 					byte[] payload;
 
 					try {
@@ -148,48 +150,50 @@ public class Client {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				} else {
+
+				}
+
+			} else {
+
+				// No need to send any more files; when the ack table is empty
+				// then we can feel free to finally leave
+
+				if (unackedPackets.size() == 0) {
 					transmitComplete = true;
 				}
+				
+			}
 
-			} // end ack check
+			// Check to see if we need to retransmit anything
+			long delta = System.currentTimeMillis() - oldestPacketTime;
 
-			// Retransmit when we require it
-			else {
-				// Check to see if we need to retransmit
-				long delta = System.currentTimeMillis() - oldestPacketTime;
+			if (delta > TIMEOUT) {
 
-				if (delta > TIMEOUT) {
+				// Sort by the unique creation ID so we guarentee the oldest
+				// packet will be sent
+				// first without fail
+				List<ReliablePacket> packets = new ArrayList<ReliablePacket>(
+						unackedPackets.values());
 
-					// Sort by the unique creation ID so we guarentee the oldest
-					// packet will be sent
-					// first without fail
-					List<ReliablePacket> packets = new ArrayList<ReliablePacket>(
-							unackedPackets.values());
-
-					Collections.sort(packets, new Comparator<ReliablePacket>() {
-						public int compare(ReliablePacket s1, ReliablePacket s2) {
-							return Long.compare(s1.getUniqueId(),
-									s2.getUniqueId());
-						}
-					});
-
-					// Resend our payload
-					for (ReliablePacket packet : packets) {
-						packet.setTimestamp(System.currentTimeMillis());
-						System.out.println(System.currentTimeMillis() / 10000
-								+ "|| Retransmit: "
-								+ packet.getSequenceNumber());
-						byte[] payload = packet.getPacketPayload();
-						socket.send(new DatagramPacket(payload, payload.length,
-								IPAddress, portClient));
+				Collections.sort(packets, new Comparator<ReliablePacket>() {
+					public int compare(ReliablePacket s1, ReliablePacket s2) {
+						return Long.compare(s1.getUniqueId(), s2.getUniqueId());
 					}
+				});
 
-					// Reset timer
-					System.out.println(System.currentTimeMillis());
-					oldestPacketTime = System.currentTimeMillis();
+				// Resend our payload
+				for (ReliablePacket packet : packets) {
+					packet.setTimestamp(System.currentTimeMillis());
+					System.out.println(System.currentTimeMillis() / 10000
+							+ "|| Retransmit: " + packet.getSequenceNumber());
+					byte[] payload = packet.getPacketPayload();
+					socket.send(new DatagramPacket(payload, payload.length,
+							IPAddress, portClient));
 				}
 
+				// Reset timer
+				System.out.println(System.currentTimeMillis());
+				oldestPacketTime = System.currentTimeMillis();
 			}
 
 		}
