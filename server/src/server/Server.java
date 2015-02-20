@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.SocketException;
 
 /**
@@ -124,8 +126,11 @@ public class Server {
 			DatagramSocket socket, int ackPort) throws IOException {
 		// Send to the port specified by the client getting acknowledgements
 		int port = ackPort;
-		InetAddress address = packet.getAddress();
+		InetSocketAddress socketAddress = (InetSocketAddress) packet.getSocketAddress();
+		InetAddress address = socketAddress.getAddress();
+		
 
+		
 		// A single byte with the acknowledgment number
 		byte[] buffer = new byte[1];
 		buffer[0] = packet.getData()[0];
