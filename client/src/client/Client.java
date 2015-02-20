@@ -221,13 +221,15 @@ public class Client {
 		}
 		// Kill ack listener
 
-		ack_listener.stop();
+//		ack_listener.stop();
+
 
 		System.out.println((System.currentTimeMillis() - startTime) / 1000
 				+ "s");
 
 		// Goodbye
 		socket.close();
+		
 	}
 
 	public static class AckListener implements Runnable {
@@ -281,7 +283,9 @@ public class Client {
 				}
 
 				Client.oldestPacketTime = newOldest;
-
+				if(ackPacket.getData()[0]==-1){
+					return;
+				}
 			}
 
 		}
