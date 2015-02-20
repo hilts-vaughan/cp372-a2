@@ -63,7 +63,7 @@ public class Client {
 		reliabilitySeed = 0;
 
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
-		windowSize = 10;
+		windowSize = 40;
 
 		long startTime = System.currentTimeMillis();
 
