@@ -83,7 +83,7 @@ public class Client {
 		ReliableSenderSocket socket;
 
 		try {
-			socket = new ReliableSenderSocket(3333);
+			socket = new ReliableSenderSocket(3333, 500);
 		} catch (SocketException exception) {
 			System.out.println("The host could not be contacted. Aborting.");
 			return;
