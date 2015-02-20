@@ -78,7 +78,7 @@ public class ChunkedFile {
 	 */
 	private static byte[] getBytesFromInputStream(FileInputStream is) {
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {
-			byte[] buffer = new byte[1024 * 1024 * 1024 * 50];
+			byte[] buffer = new byte[4096];
 
 			for (int len; (len = is.read(buffer)) != -1;)
 				os.write(buffer, 0, len);
