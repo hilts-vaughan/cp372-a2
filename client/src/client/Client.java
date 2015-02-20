@@ -64,8 +64,8 @@ public class Client {
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
 		windowSize = 10;
 		
-		Thread t = new Thread(new AckListener(portHost, unackedPackets));
-		t.start();
+		Thread ack_listener = new Thread(new AckListener(portHost, unackedPackets));
+		ack_listener.start();
 		
 		long startTime = System.currentTimeMillis();
 		
@@ -200,8 +200,18 @@ public class Client {
 		System.out
 				.println("I blasted everything. Goodbye. Sent: " + chunksSent);
 
+		byte[] temp=new byte[1];
+		
+		ReliablePacket packet = new ReliablePacket((byte)-1, temp, System.currentTimeMillis());
+
+		unackedPackets.put((byte)-1,packet);
+		DatagramPacket terminate = new DatagramPacket(packet.getPacketPayload(), packet.getPacketPayload().length,
+				IPAddress, portClient);
+		while(unackedPackets.isEmpty()==false){
+			socket.send(terminate);
+		}
 		// Kill ack listener
-		t.stop();
+		ack_listener.stop();
 		
 		System.out.println( (System.currentTimeMillis() - startTime)/1000 + "s");
 		
