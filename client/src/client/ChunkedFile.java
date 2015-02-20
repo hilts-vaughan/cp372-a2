@@ -29,8 +29,10 @@ public class ChunkedFile {
 	}
 
 	/**
-	 * Checks to see if the chunked file has been read entirley by "getByteChunk" already.
-	 * @return	Returns true if the entire file has been read, false otherwise.
+	 * Checks to see if the chunked file has been read entirley by
+	 * "getByteChunk" already.
+	 * 
+	 * @return Returns true if the entire file has been read, false otherwise.
 	 */
 	public boolean isDataLeft() {
 		return this.m_offset != this.m_data.length;
@@ -66,11 +68,13 @@ public class ChunkedFile {
 		return b;
 	}
 
-
 	/**
-	 * Given a file input streams, reads all the data and returns it as a buffer.
-	 * @param is	The input file stream to use and read all the data out of.
-	 * @return		An array of byte data contained in the file
+	 * Given a file input streams, reads all the data and returns it as a
+	 * buffer.
+	 * 
+	 * @param is
+	 *            The input file stream to use and read all the data out of.
+	 * @return An array of byte data contained in the file
 	 */
 	private static byte[] getBytesFromInputStream(FileInputStream is) {
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {

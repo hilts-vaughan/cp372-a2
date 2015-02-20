@@ -22,12 +22,13 @@ public class Client {
 	private static Map<Byte, ReliablePacket> unackedPackets = new ConcurrentHashMap<Byte, ReliablePacket>();
 
 	// A 2s timeout is plenty
-	//TODO: Make this variable depending on network conditions
+	// TODO: Make this variable depending on network conditions
 	private final static int TIMEOUT = 300;
-	
+
 	public static long oldestPacketTime = 0;
-	
-	public static void main(String[] args) throws InterruptedException, IOException {
+
+	public static void main(String[] args) throws InterruptedException,
+			IOException {
 
 		System.out.println("Param Set: ");
 		for (String arg : args) {
@@ -57,18 +58,18 @@ public class Client {
 		}
 
 		portClient = 7000;
-		
+
 		// OK, we've extracted what we need. Moving on...
 		reliabilitySeed = 0;
 
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
 		windowSize = 10;
-		
-		Thread ack_listener = new Thread(new AckListener(portHost, unackedPackets));
+
+		Thread ack_listener = new Thread(new AckListener(portHost,
+				unackedPackets));
 		ack_listener.start();
-		
+
 		long startTime = System.currentTimeMillis();
-		
 
 		ChunkedFile chunkedFile;
 		try {
@@ -107,7 +108,6 @@ public class Client {
 
 		byte seqNumber = 0;
 
-		
 		while (transmitComplete == false) {
 
 			// Ensure the ack check is proper
@@ -127,19 +127,17 @@ public class Client {
 					ReliablePacket packet = new ReliablePacket(seqNumber,
 							payload, System.currentTimeMillis());
 
-					// If this is the only packet in queue, it must be the oldest
-					if(unackedPackets.size() == 0)
+					// If this is the only packet in queue, it must be the
+					// oldest
+					if (unackedPackets.size() == 0)
 						oldestPacketTime = packet.getTimestamp();
-						
-					
+
 					unackedPackets.put(seqNumber, packet);
 
 					// Increment our sequence counter
 					seqNumber = (byte) ((seqNumber + 1) % 128);
 
 					payload = packet.getPacketPayload();
-
-	
 
 					// Send our data
 					try {
@@ -155,74 +153,75 @@ public class Client {
 				}
 
 			} // end ack check
-			
+
 			// Retransmit when we require it
 			else {
 				// Check to see if we need to retransmit
 				long delta = System.currentTimeMillis() - oldestPacketTime;
-				
-				if(delta > TIMEOUT) {
-					
-					// Sort by the unique creation ID so we guarentee the oldest packet will be sent 
+
+				if (delta > TIMEOUT) {
+
+					// Sort by the unique creation ID so we guarentee the oldest
+					// packet will be sent
 					// first without fail
-					List<ReliablePacket> packets = new ArrayList<ReliablePacket>(unackedPackets.values());
-										
-					Collections.sort(packets, new Comparator<ReliablePacket>(){
-					    public int compare(ReliablePacket s1, ReliablePacket s2) {
-					        return Long.compare(s1.getUniqueId(), s2.getUniqueId());	
-					    }
+					List<ReliablePacket> packets = new ArrayList<ReliablePacket>(
+							unackedPackets.values());
+
+					Collections.sort(packets, new Comparator<ReliablePacket>() {
+						public int compare(ReliablePacket s1, ReliablePacket s2) {
+							return Long.compare(s1.getUniqueId(),
+									s2.getUniqueId());
+						}
 					});
-					
-					
+
 					// Resend our payload
-					for(ReliablePacket packet : packets) {						
+					for (ReliablePacket packet : packets) {
 						packet.setTimestamp(System.currentTimeMillis());
-						System.out.println(System.currentTimeMillis() / 10000 +  "|| Retransmit: " + packet.getSequenceNumber());
+						System.out.println(System.currentTimeMillis() / 10000
+								+ "|| Retransmit: "
+								+ packet.getSequenceNumber());
 						byte[] payload = packet.getPacketPayload();
 						socket.send(new DatagramPacket(payload, payload.length,
-								IPAddress, portClient));				
+								IPAddress, portClient));
 					}
-					
+
 					// Reset timer
-					System.out.println(System.currentTimeMillis());					
+					System.out.println(System.currentTimeMillis());
 					oldestPacketTime = System.currentTimeMillis();
 				}
-				
-		
-				
+
 			}
-			
-			
-			
 
 		}
 
 		System.out
 				.println("I blasted everything. Goodbye. Sent: " + chunksSent);
 
-		byte[] temp=new byte[1];
-		
-		ReliablePacket packet = new ReliablePacket((byte)-1, temp, System.currentTimeMillis());
+		byte[] temp = new byte[1];
 
-		unackedPackets.put((byte)-1,packet);
-		DatagramPacket terminate = new DatagramPacket(packet.getPacketPayload(), packet.getPacketPayload().length,
+		ReliablePacket packet = new ReliablePacket((byte) -1, temp,
+				System.currentTimeMillis());
+
+		unackedPackets.put((byte) -1, packet);
+		DatagramPacket terminate = new DatagramPacket(
+				packet.getPacketPayload(), packet.getPacketPayload().length,
 				IPAddress, portClient);
 
 		long previous = System.currentTimeMillis();
 		socket.send(terminate);
-		while(unackedPackets.isEmpty()==false){
-			if(System.currentTimeMillis()-previous>TIMEOUT){
+		while (unackedPackets.isEmpty() == false) {
+			if (System.currentTimeMillis() - previous > TIMEOUT) {
 				socket.send(terminate);
-				previous=System.currentTimeMillis();
+				previous = System.currentTimeMillis();
 			}
 		}
 		// Kill ack listener
-		
-		
+
 		ack_listener.stop();
-		
-		System.out.println( (System.currentTimeMillis() - startTime)/1000 + "s");
-		
+
+		System.out.println((System.currentTimeMillis() - startTime) / 1000
+				+ "s");
+
 		// Goodbye
 		socket.close();
 	}
@@ -231,8 +230,7 @@ public class Client {
 
 		private int m_port = 0;
 		private Map<Byte, ReliablePacket> packetMap;
-		
-		
+
 		public AckListener(int port, Map<Byte, ReliablePacket> packetMap) {
 			m_port = 5001;
 			this.packetMap = packetMap;
@@ -249,9 +247,8 @@ public class Client {
 				System.out.println("Failed to bind ack to " + m_port);
 				return;
 			}
-			
-			for (;;) {
 
+			for (;;) {
 
 				DatagramPacket ackPacket = new DatagramPacket(new byte[1], 1);
 
@@ -263,24 +260,24 @@ public class Client {
 					e.printStackTrace();
 				}
 
-				// Remove the element from the hash table; sequence number expected
+				// Remove the element from the hash table; sequence number
+				// expected
 				this.packetMap.remove(ackPacket.getData()[0]);
-				
+
 				System.out.println("Ack recieved: " + ackPacket.getData()[0]);
-				
+
 				// We need to update the oldest packet
-				
+
 				long newOldest = Long.MAX_VALUE;
-				
-				for(ReliablePacket packet : packetMap.values()) {
-					if(packet.getTimestamp() < newOldest) {
+
+				for (ReliablePacket packet : packetMap.values()) {
+					if (packet.getTimestamp() < newOldest) {
 						newOldest = packet.getTimestamp();
 					}
 				}
-				
+
 				Client.oldestPacketTime = newOldest;
-				
-				
+
 			}
 
 		}
