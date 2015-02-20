@@ -38,7 +38,7 @@ public class Client {
 		String hostAddress = "";
 		int portHost, portClient;
 		String fileName = "";
-		int reliabilitySeed = 0;
+		int reliabilityNumber = 0;
 		int windowSize = 0;
 
 		try {
@@ -47,7 +47,7 @@ public class Client {
 			portHost = Integer.parseInt(args[1]);
 			portClient = Integer.parseInt(args[2]);
 			fileName = args[3];
-			reliabilitySeed = Integer.parseInt(args[4]);
+			reliabilityNumber = Integer.parseInt(args[4]);
 			windowSize = Integer.parseInt(args[5]);
 
 		} catch (Exception e) {
@@ -63,11 +63,16 @@ public class Client {
 			return;
 		}
 		
+		if(reliabilityNumber < 0)  {
+			System.out.println("The reliability number must be 0 or greater and a valid integer.");
+			return;
+		}
+		
 		portClient = 7000;
 
-		// OK, we've extracted what we need. Moving on...
-		reliabilitySeed = 0;
-
+		
+		
+		
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
 		windowSize = 40;
 
