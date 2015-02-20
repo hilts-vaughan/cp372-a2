@@ -57,6 +57,12 @@ public class Client {
 			return;
 		}
 
+		// Verify window size
+		if(windowSize < 1 || windowSize > 128) {
+			System.out.println("The window size must be 1-128 and a valid integer.");
+			return;
+		}
+		
 		portClient = 7000;
 
 		// OK, we've extracted what we need. Moving on...
