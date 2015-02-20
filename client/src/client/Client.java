@@ -65,10 +65,6 @@ public class Client {
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
 		windowSize = 10;
 
-		Thread ack_listener = new Thread(new AckListener(portHost,
-				unackedPackets));
-		ack_listener.start();
-
 		long startTime = System.currentTimeMillis();
 
 		ChunkedFile chunkedFile;
@@ -108,6 +104,12 @@ public class Client {
 
 		byte seqNumber = 0;
 
+
+		Thread ack_listener = new Thread(new AckListener(portHost,
+				unackedPackets, socket));
+		ack_listener.start();
+
+		
 		while (transmitComplete == false) {
 
 			// If there's data left, we can try and send it
@@ -236,23 +238,18 @@ public class Client {
 
 		private int m_port = 0;
 		private Map<Byte, ReliablePacket> packetMap;
-
-		public AckListener(int port, Map<Byte, ReliablePacket> packetMap) {
+		private DatagramSocket socket;
+		
+		public AckListener(int port, Map<Byte, ReliablePacket> packetMap, DatagramSocket socket) {
 			m_port = 5001;
 			this.packetMap = packetMap;
+			this.socket = socket;
 		}
 
 		@Override
 		public void run() {
 
-			DatagramSocket socket;
-			// Setup our listener here and wait for acks
-			try {
-				socket = new DatagramSocket(m_port);
-			} catch (SocketException e) {
-				System.out.println("Failed to bind ack to " + m_port);
-				return;
-			}
+	
 
 			for (;;) {
 
@@ -260,7 +257,7 @@ public class Client {
 
 				// Recieve the ack packet
 				try {
-					socket.receive(ackPacket);
+					this.socket.receive(ackPacket);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

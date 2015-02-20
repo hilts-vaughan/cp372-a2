@@ -125,10 +125,10 @@ public class Server {
 	private static void sendPacketAck(DatagramPacket packet,
 			DatagramSocket socket, int ackPort) throws IOException {
 		// Send to the port specified by the client getting acknowledgements
-		int port = ackPort;
+		
 		InetSocketAddress socketAddress = (InetSocketAddress) packet.getSocketAddress();
 		InetAddress address = socketAddress.getAddress();
-		
+		int port = socketAddress.getPort();
 
 		
 		// A single byte with the acknowledgment number
