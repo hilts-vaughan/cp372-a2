@@ -86,7 +86,7 @@ public class Server {
 
 			System.out.println("Packet recieved with sequence number: "
 					+ data[0]);
-			System.out.println("Expected... " + expectedSeqNum);
+			System.out.println("Expecting packet with sequence number: " + expectedSeqNum);
 			// Just discard the packet if it's not what we expected
 			if (data[0] == -1) {
 				sendPacketAck(packet, socket, portAck);
@@ -103,8 +103,7 @@ public class Server {
 				try {
 					out.write(data[i]);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Fatal! Buffer could not be allocated properly.");
 				}
 			}
 

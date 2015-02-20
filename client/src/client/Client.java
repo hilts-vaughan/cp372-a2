@@ -25,7 +25,7 @@ public class Client {
 	public static void main(String[] args) throws InterruptedException,
 			IOException {
 
-		System.out.println("Param Set: ");
+		System.out.println("Client started with parameters: ");
 		for (String arg : args) {
 			System.out.println(arg);
 		}
@@ -35,6 +35,9 @@ public class Client {
 		String fileName = "";
 		int reliabilityNumber = 0;
 		int windowSize = 0;
+
+		// Blank line
+		System.out.println("");
 
 		try {
 
@@ -102,7 +105,8 @@ public class Client {
 			return;
 		}
 
-		System.out.println("Sending on port " + portClient);
+		System.out.println("Sending to port " + portClient + " on port "
+				+ portHost);
 
 		Boolean transmitComplete = false;
 
@@ -205,7 +209,9 @@ public class Client {
 		}
 
 		System.out
-				.println("I blasted everything. Goodbye. Sent: " + chunksSent);
+				.println("All "
+						+ chunksSent
+						+ " file chunks acknowledged. Awaiting shutdown confirmation...");
 
 		byte[] temp = new byte[1];
 
@@ -225,12 +231,11 @@ public class Client {
 				previous = System.currentTimeMillis();
 			}
 		}
-		// Kill ack listener
 
-		// ack_listener.stop();
+		System.out.println("Shutdown acknowledged. Terminating client...");
 
-		System.out.println((System.currentTimeMillis() - startTime) / 1000
-				+ "s");
+		float totalTime = (System.currentTimeMillis() - startTime) / (float) 1000;
+		System.out.println("Total Transmission Time: " + totalTime + "s");
 
 		// Goodbye
 		socket.close();
@@ -267,8 +272,6 @@ public class Client {
 				// expected
 				this.packetMap.remove(ackPacket.getData()[0]);
 
-				System.out.println("Ack recieved: " + ackPacket.getData()[0]);
-
 				// We need to update the oldest packet
 
 				long newOldest = Long.MAX_VALUE;
@@ -283,6 +286,9 @@ public class Client {
 				if (ackPacket.getData()[0] == -1) {
 					return;
 				}
+
+				System.out.println("Ack recieved: " + ackPacket.getData()[0]);
+
 			}
 
 		}
