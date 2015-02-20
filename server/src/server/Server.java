@@ -7,7 +7,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.SocketException;
 
 /**
@@ -43,17 +42,7 @@ public class Server {
 		portAck = 5001;
 		portData = 7000;
 
-		// Try binding
-		DatagramSocket socket;
-		try {
-			socket = new DatagramSocket(portData);
-		} catch (SocketException e) {
-			System.out.println("Failed to bind server to port: " + portData);
-			return;
-		}
 
-		System.out.println("The file server is ready. Bound to port "
-				+ portData);
 
 		FileOutputStream out;
 		try {
@@ -63,6 +52,20 @@ public class Server {
 			return;
 		}
 
+		
+		// Try binding
+		DatagramSocket socket;
+		try {
+			socket = new DatagramSocket(portData);
+		} catch (SocketException e) {
+			System.out.println("Failed to bind server to port: " + portData);
+			out.close();
+			return;
+		}
+
+		System.out.println("The file server is ready. Bound to port "
+				+ portData);
+		
 		int expectedSeqNum = 0;
 
 		// Loop forever

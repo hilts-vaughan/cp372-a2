@@ -4,15 +4,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Client {
@@ -58,21 +53,20 @@ public class Client {
 		}
 
 		// Verify window size
-		if(windowSize < 1 || windowSize > 128) {
-			System.out.println("The window size must be 1-128 and a valid integer.");
+		if (windowSize < 1 || windowSize > 128) {
+			System.out
+					.println("The window size must be 1-128 and a valid integer.");
 			return;
 		}
-		
-		if(reliabilityNumber < 0)  {
-			System.out.println("The reliability number must be 0 or greater and a valid integer.");
+
+		if (reliabilityNumber < 0) {
+			System.out
+					.println("The reliability number must be 0 or greater and a valid integer.");
 			return;
 		}
-		
+
 		portClient = 7000;
 
-		
-		
-		
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
 		windowSize = 40;
 
@@ -104,6 +98,7 @@ public class Client {
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			socket.close();
 			return;
 		}
 
@@ -115,12 +110,10 @@ public class Client {
 
 		byte seqNumber = 0;
 
-
-		Thread ack_listener = new Thread(new AckListener(portHost,
-				unackedPackets, socket));
+		Thread ack_listener = new Thread(
+				new AckListener(unackedPackets, socket));
 		ack_listener.start();
 
-		
 		while (transmitComplete == false) {
 
 			// If there's data left, we can try and send it
@@ -174,7 +167,7 @@ public class Client {
 				if (unackedPackets.size() == 0) {
 					transmitComplete = true;
 				}
-				
+
 			}
 
 			// Check to see if we need to retransmit anything
@@ -234,33 +227,29 @@ public class Client {
 		}
 		// Kill ack listener
 
-//		ack_listener.stop();
-
+		// ack_listener.stop();
 
 		System.out.println((System.currentTimeMillis() - startTime) / 1000
 				+ "s");
 
 		// Goodbye
 		socket.close();
-		
+
 	}
 
 	public static class AckListener implements Runnable {
 
-		private int m_port = 0;
 		private Map<Byte, ReliablePacket> packetMap;
 		private DatagramSocket socket;
-		
-		public AckListener(int port, Map<Byte, ReliablePacket> packetMap, DatagramSocket socket) {
-			m_port = 5001;
+
+		public AckListener(Map<Byte, ReliablePacket> packetMap,
+				DatagramSocket socket) {
 			this.packetMap = packetMap;
 			this.socket = socket;
 		}
 
 		@Override
 		public void run() {
-
-	
 
 			for (;;) {
 
@@ -291,7 +280,7 @@ public class Client {
 				}
 
 				Client.oldestPacketTime = newOldest;
-				if(ackPacket.getData()[0]==-1){
+				if (ackPacket.getData()[0] == -1) {
 					return;
 				}
 			}

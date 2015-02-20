@@ -2,8 +2,6 @@ package client;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.Random;
 
@@ -33,7 +31,7 @@ public class ReliableSenderSocket extends DatagramSocket {
 	 */
 	@Override
 	public void send(java.net.DatagramPacket packet) throws IOException {
-		int die = getRandomInt(1, 500);
+		int die = getRandomInt(1, this.m_reliabilityNumber);
 
 		// Pseudo-lossy
 		if (die == 1)
