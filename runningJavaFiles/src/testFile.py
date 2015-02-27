@@ -31,7 +31,7 @@ for windowNum in WINDOWSIZE:
             for timeing in TIMEOUTS:
                 s.serving()
                 start = time.time()
-                subprocess.call(['java ',["Client ","Localhost ","5555 ","7777 ",fileName,reliab,windowNum,timeing]])
+                subprocess.call(['java ',["Client ","104.236.62.77 ","5555 ","7777 ",fileName,reliab,windowNum,timeing]])
                 end = time.time()
                 item=[fileName+','+reliab+','+windowNum+','+timeing, end - start]
                 cur=str(item).strip('[').strip(']').replace("'",'').replace(" ","")
