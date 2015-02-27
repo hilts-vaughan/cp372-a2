@@ -1,4 +1,4 @@
-package client;
+
 
 /**
  * A reliable packet implementation that encapsulates data for reliable file
