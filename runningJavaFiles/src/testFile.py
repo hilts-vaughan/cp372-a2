@@ -18,7 +18,7 @@ import subprocess
 import time
 
 
-s = ServerProxy('http://localhost:8000')
+s = ServerProxy('http://104.236.62.77:8000', verbose=True)
 times=[]
 FILES=["test_short.txt ","accelerator.jpg ", "test_medium.txt ","test_short.txt ","test_long.txt ","test_border.txt "]
 RELIABILITYNUM=["0 ","5 ","100 "]
