@@ -6,9 +6,11 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 public class Client {
 
@@ -16,6 +18,9 @@ public class Client {
 	// we'll do so here
 	private static Map<Byte, ReliablePacket> unackedPackets = new ConcurrentHashMap<Byte, ReliablePacket>();
 
+	private static final Semaphore lock = new Semaphore(1);
+
+	
 	// A 2s timeout is plenty
 	// TODO: Make this variable depending on network conditions
 	private int timeout = 300;
@@ -120,9 +125,13 @@ public class Client {
 
 		while (transmitComplete == false) {
 
+		   lock.acquire();
+
+		
 			// If there's data left, we can try and send it
 			if (chunkedFile.isDataLeft()) {
 
+				
 				// Only send if we can afford to
 				if (unackedPackets.values().size() < windowSize) {
 
@@ -208,6 +217,9 @@ public class Client {
 				System.out.println(System.currentTimeMillis());
 				oldestPacketTime = System.currentTimeMillis();
 			}
+			
+		    lock.release();
+
 
 		}
 
@@ -271,11 +283,39 @@ public class Client {
 					e.printStackTrace();
 				}
 
+				try {
+					lock.acquire();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
 				// Remove the element from the hash table; sequence number
-				// expected
+				// expected; however, that's not all.
+				// Since this is a cumulative ack, we should remove everything
+				// else that is below, as well
 				this.packetMap.remove(ackPacket.getData()[0]);
 
+				// Get our sequence number
+				byte seqNum = ackPacket.getData()[0];
+				
+				ReliablePacket destructorPacket = this.packetMap.get(seqNum);
+				
+				Iterator<Map.Entry<Byte,ReliablePacket>> iter = this.packetMap.entrySet().iterator();
+				while (iter.hasNext()) {
+				    Map.Entry<Byte,ReliablePacket> entry = iter.next();
+				    // Remove if the packet should be wiped out from a cumlative ack
+				    if(entry.getValue().getUniqueId() < destructorPacket.getUniqueId()){
+				        // Watch your step now! Are you serious?
+				    	// Don't do this inside a for loop; safe iteration remove
+				    	iter.remove();
+				    }
+				}
+				
+				// C'mon; two step OK
+				
+				
+				
 				// We need to update the oldest packet
 
 				long newOldest = Long.MAX_VALUE;
@@ -291,8 +331,11 @@ public class Client {
 					return;
 				}
 
+				lock.release();
 				System.out.println("Ack recieved: " + ackPacket.getData()[0]);
-
+				
+				
+				
 			}
 
 		}

@@ -87,17 +87,20 @@ public class Server {
 			System.out.println("Packet recieved with sequence number: "
 					+ data[0]);
 			System.out.println("Expecting packet with sequence number: " + expectedSeqNum);
+			
 			// Just discard the packet if it's not what we expected
 			if (data[0] == -1) {
-				sendPacketAck(packet, socket, portAck);
+				sendPacketAck(packet, socket, portAck, (byte) -1);
 				System.out.println("-1 received server shutting down");
 				out.close();
 				return;
 
 			}
 
-			if (data[0] != expectedSeqNum)
+			if (data[0] != expectedSeqNum) {
+				sendPacketAck(packet, socket, portAck, (byte) (expectedSeqNum - 1) );
 				continue;
+			}
 
 			for (int i = 3; i < 3 + data[2]; i++) {
 				try {
@@ -111,7 +114,7 @@ public class Server {
 			expectedSeqNum = (byte) ((expectedSeqNum + 1) % 128);
 
 			// Send our acknowledgement to the client listener
-			sendPacketAck(packet, socket, portAck);
+			sendPacketAck(packet, socket, portAck, data[0]);
 
 			// out.flush();
 
@@ -126,7 +129,7 @@ public class Server {
 	 * @throws IOException
 	 */
 	private static void sendPacketAck(DatagramPacket packet,
-			DatagramSocket socket, int ackPort) throws IOException {
+			DatagramSocket socket, int ackPort, byte seqAcknowledge) throws IOException {
 		// Send to the port specified by the client getting acknowledgements
 		
 		InetSocketAddress socketAddress = (InetSocketAddress) packet.getSocketAddress();
@@ -136,7 +139,7 @@ public class Server {
 		
 		// A single byte with the acknowledgment number
 		byte[] buffer = new byte[1];
-		buffer[0] = packet.getData()[0];
+		buffer[0] = seqAcknowledge;
 
 		DatagramPacket ackPacket = new DatagramPacket(buffer, buffer.length,
 				address, port);
