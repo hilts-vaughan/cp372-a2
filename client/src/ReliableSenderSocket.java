@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -30,12 +29,17 @@ public class ReliableSenderSocket extends DatagramSocket {
 	 */
 	@Override
 	public void send(java.net.DatagramPacket packet) throws IOException {
-		int die = getRandomInt(1, this.m_reliabilityNumber);
 
-		// Pseudo-lossy
-		if (die == 1)
-			return;
+		// If we're using 0, forget it
+		if (this.m_reliabilityNumber != 0) {
+			int die = getRandomInt(1, this.m_reliabilityNumber);
 
+			// Pseudo-lossy
+			if (die == 1)
+				return;
+
+		}
+		
 		super.send(packet);
 	}
 
