@@ -287,6 +287,7 @@ public class Client {
 					lock.acquire();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
+					System.out.println("Acquiring issues...");
 					e.printStackTrace();
 				}
 
@@ -294,12 +295,18 @@ public class Client {
 				// expected; however, that's not all.
 				// Since this is a cumulative ack, we should remove everything
 				// else that is below, as well
-				this.packetMap.remove(ackPacket.getData()[0]);
-
+				
 				// Get our sequence number
 				byte seqNum = ackPacket.getData()[0];
 				
+				
 				ReliablePacket destructorPacket = this.packetMap.get(seqNum);
+				
+
+				this.packetMap.remove(ackPacket.getData()[0]);
+
+
+				
 				
 				Iterator<Map.Entry<Byte,ReliablePacket>> iter = this.packetMap.entrySet().iterator();
 				while (iter.hasNext()) {
@@ -308,6 +315,7 @@ public class Client {
 				    if(entry.getValue().getUniqueId() < destructorPacket.getUniqueId()){
 				        // Watch your step now! Are you serious?
 				    	// Don't do this inside a for loop; safe iteration remove
+				    	System.out.println("Removing excessive ack");
 				    	iter.remove();
 				    }
 				}

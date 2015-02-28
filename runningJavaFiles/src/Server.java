@@ -1,3 +1,5 @@
+package server;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -5,7 +7,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.SocketException;
 
 /**
@@ -41,17 +42,7 @@ public class Server {
 		portAck = 5001;
 		portData = 7000;
 
-		// Try binding
-		DatagramSocket socket;
-		try {
-			socket = new DatagramSocket(portData);
-		} catch (SocketException e) {
-			System.out.println("Failed to bind server to port: " + portData);
-			return;
-		}
 
-		System.out.println("The file server is ready. Bound to port "
-				+ portData);
 
 		FileOutputStream out;
 		try {
@@ -61,6 +52,20 @@ public class Server {
 			return;
 		}
 
+		
+		// Try binding
+		DatagramSocket socket;
+		try {
+			socket = new DatagramSocket(portData);
+		} catch (SocketException e) {
+			System.out.println("Failed to bind server to port: " + portData);
+			out.close();
+			return;
+		}
+
+		System.out.println("The file server is ready. Bound to port "
+				+ portData);
+		
 		int expectedSeqNum = 0;
 
 		// Loop forever
@@ -81,24 +86,27 @@ public class Server {
 
 			System.out.println("Packet recieved with sequence number: "
 					+ data[0]);
-			System.out.println("Expected... " + expectedSeqNum);
+			System.out.println("Expecting packet with sequence number: " + expectedSeqNum);
+			
 			// Just discard the packet if it's not what we expected
 			if (data[0] == -1) {
-				sendPacketAck(packet, socket, portAck);
+				sendPacketAck(packet, socket, portAck, (byte) -1);
 				System.out.println("-1 received server shutting down");
+				out.close();
 				return;
 
 			}
 
-			if (data[0] != expectedSeqNum)
+			if (data[0] != expectedSeqNum) {
+				sendPacketAck(packet, socket, portAck, (byte) (expectedSeqNum - 1) );
 				continue;
+			}
 
 			for (int i = 3; i < 3 + data[2]; i++) {
 				try {
 					out.write(data[i]);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Fatal! Buffer could not be allocated properly.");
 				}
 			}
 
@@ -106,7 +114,7 @@ public class Server {
 			expectedSeqNum = (byte) ((expectedSeqNum + 1) % 128);
 
 			// Send our acknowledgement to the client listener
-			sendPacketAck(packet, socket, portAck);
+			sendPacketAck(packet, socket, portAck, data[0]);
 
 			// out.flush();
 
@@ -121,7 +129,7 @@ public class Server {
 	 * @throws IOException
 	 */
 	private static void sendPacketAck(DatagramPacket packet,
-			DatagramSocket socket, int ackPort) throws IOException {
+			DatagramSocket socket, int ackPort, byte seqAcknowledge) throws IOException {
 		// Send to the port specified by the client getting acknowledgements
 		
 		InetSocketAddress socketAddress = (InetSocketAddress) packet.getSocketAddress();
@@ -131,7 +139,7 @@ public class Server {
 		
 		// A single byte with the acknowledgment number
 		byte[] buffer = new byte[1];
-		buffer[0] = packet.getData()[0];
+		buffer[0] = seqAcknowledge;
 
 		DatagramPacket ackPacket = new DatagramPacket(buffer, buffer.length,
 				address, port);
