@@ -71,7 +71,7 @@ public class Client {
 		portClient = 7000;
 
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
-		windowSize = 40;
+		//windowSize = 40;
 
 		long startTime = System.currentTimeMillis();
 
@@ -88,7 +88,7 @@ public class Client {
 		ReliableSenderSocket socket;
 
 		try {
-			socket = new ReliableSenderSocket(3333, 500);
+			socket = new ReliableSenderSocket(3333, reliabilityNumber);
 		} catch (SocketException exception) {
 			System.out.println("The host could not be contacted. Aborting.");
 			return;
@@ -161,6 +161,9 @@ public class Client {
 						e.printStackTrace();
 					}
 
+				}
+				else{
+				
 				}
 
 			} else {
@@ -267,6 +270,11 @@ public class Client {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+
+				// If this ack can't be found, just ignore
+				if(!this.packetMap.containsKey(ackpacket.getData()[0])
+				   continue;
+
 
 				// Remove the element from the hash table; sequence number
 				// expected
