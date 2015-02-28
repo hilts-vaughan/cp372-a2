@@ -271,10 +271,6 @@ public class Client {
 					e.printStackTrace();
 				}
 
-				// If this ack can't be found, just ignore
-				if(!this.packetMap.containsKey(ackpacket.getData()[0])
-				   continue;
-
 
 				// Remove the element from the hash table; sequence number
 				// expected
