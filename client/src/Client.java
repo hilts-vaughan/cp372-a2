@@ -1,5 +1,4 @@
 
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
@@ -20,7 +19,6 @@ public class Client {
 
 	private static final Semaphore lock = new Semaphore(1);
 
-	
 	// A 2s timeout is plenty
 	// TODO: Make this variable depending on network conditions
 	private int timeout = 300;
@@ -52,7 +50,7 @@ public class Client {
 			fileName = args[3];
 			reliabilityNumber = Integer.parseInt(args[4]);
 			windowSize = Integer.parseInt(args[5]);
-			timeout=Integer.parseInt(args[6]);
+			timeout = Integer.parseInt(args[6]);
 		} catch (Exception e) {
 			System.out
 					.println("The given command line arguments were not valid. "
@@ -76,7 +74,7 @@ public class Client {
 		portClient = 7000;
 
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
-		//windowSize = 40;
+		// windowSize = 40;
 
 		long startTime = System.currentTimeMillis();
 
@@ -125,13 +123,11 @@ public class Client {
 
 		while (transmitComplete == false) {
 
-		   lock.acquire();
+			lock.acquire();
 
-		
 			// If there's data left, we can try and send it
 			if (chunkedFile.isDataLeft()) {
 
-				
 				// Only send if we can afford to
 				if (unackedPackets.values().size() < windowSize) {
 
@@ -170,9 +166,8 @@ public class Client {
 						e.printStackTrace();
 					}
 
-				}
-				else{
-				
+				} else {
+
 				}
 
 			} else {
@@ -217,9 +212,8 @@ public class Client {
 				System.out.println(System.currentTimeMillis());
 				oldestPacketTime = System.currentTimeMillis();
 			}
-			
-		    lock.release();
 
+			lock.release();
 
 		}
 
@@ -249,7 +243,8 @@ public class Client {
 
 		System.out.println("Shutdown acknowledged. Terminating client...");
 
-		float totalTime = (System.currentTimeMillis() - startTime) / (float) 1000;
+		float totalTime = (System.currentTimeMillis() - startTime)
+				/ (float) 1000;
 		System.out.println("Total Transmission Time: " + totalTime + "s");
 
 		// Goodbye
@@ -295,35 +290,36 @@ public class Client {
 				// expected; however, that's not all.
 				// Since this is a cumulative ack, we should remove everything
 				// else that is below, as well
-				
+
 				// Get our sequence number
 				byte seqNum = ackPacket.getData()[0];
-				
-				
+
 				ReliablePacket destructorPacket = this.packetMap.get(seqNum);
-				
 
-				this.packetMap.remove(ackPacket.getData()[0]);
+				if (destructorPacket != null) {
 
+					this.packetMap.remove(ackPacket.getData()[0]);
 
-				
-				
-				Iterator<Map.Entry<Byte,ReliablePacket>> iter = this.packetMap.entrySet().iterator();
-				while (iter.hasNext()) {
-				    Map.Entry<Byte,ReliablePacket> entry = iter.next();
-				    // Remove if the packet should be wiped out from a cumlative ack
-				    if(entry.getValue().getUniqueId() < destructorPacket.getUniqueId()){
-				        // Watch your step now! Are you serious?
-				    	// Don't do this inside a for loop; safe iteration remove
-				    	System.out.println("Removing excessive ack");
-				    	iter.remove();
-				    }
+					Iterator<Map.Entry<Byte, ReliablePacket>> iter = this.packetMap
+							.entrySet().iterator();
+					while (iter.hasNext()) {
+						Map.Entry<Byte, ReliablePacket> entry = iter.next();
+						// Remove if the packet should be wiped out from a
+						// cumlative ack
+						if (entry.getValue().getUniqueId() < destructorPacket
+								.getUniqueId()) {
+							// Watch your step now! Are you serious?
+							// Don't do this inside a for loop; safe iteration
+							// remove
+							System.out.println("Removing excessive ack");
+							iter.remove();
+						}
+					}
+
 				}
-				
+
 				// C'mon; two step OK
-				
-				
-				
+
 				// We need to update the oldest packet
 
 				long newOldest = Long.MAX_VALUE;
@@ -341,9 +337,7 @@ public class Client {
 
 				lock.release();
 				System.out.println("Ack recieved: " + ackPacket.getData()[0]);
-				
-				
-				
+
 			}
 
 		}
