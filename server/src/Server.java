@@ -1,13 +1,11 @@
-package server;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 
 /**
  * A sample implementation of our working server.
@@ -88,7 +86,7 @@ public class Server {
 
 			// If the sequence number is negative one were done
 			if (data[0] == -1) {
-				sendPacketAck(packet, socket, portAck, (byte) -1);
+				sendPacketAck(packet, socket, portAck, hostAddress, (byte) -1);
 				System.out.println("-1 received server shutting down");
 				out.close();
 				return;
@@ -96,7 +94,7 @@ public class Server {
 			}
 			// Just discard the packet if it's not what we expected
 			if (data[0] != expectedSeqNum) {
-				sendPacketAck(packet, socket, portAck, (byte) (expectedSeqNum - 1) );
+				sendPacketAck(packet, socket, portAck, hostAddress, (byte) (expectedSeqNum - 1) );
 				continue;
 			}
 			//write the package into the file
@@ -112,7 +110,7 @@ public class Server {
 			expectedSeqNum = (byte) ((expectedSeqNum + 1) % 128);
 
 			// Send our acknowledgement to the client listener
-			sendPacketAck(packet, socket, portAck, data[0]);
+			sendPacketAck(packet, socket, portAck, hostAddress, data[0]);
 
 			// out.flush();
 
@@ -127,20 +125,26 @@ public class Server {
 	 * @throws IOException
 	 */
 	private static void sendPacketAck(DatagramPacket packet,
-			DatagramSocket socket, int ackPort, byte seqAcknowledge) throws IOException {
+			DatagramSocket socket, int ackPort, String ackHost,  byte seqAcknowledge) throws IOException {
+		
 		// Send to the port specified by the client getting acknowledgments
 		
-		InetSocketAddress socketAddress = (InetSocketAddress) packet.getSocketAddress();
-		InetAddress address = socketAddress.getAddress();
-		int port = socketAddress.getPort();
+		InetAddress address;
 
+		try {
+			address = InetAddress.getByName(ackHost);
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+			return;
+		}
+		
 		
 		// A single byte with the acknowledgment number
 		byte[] buffer = new byte[1];
 		buffer[0] = seqAcknowledge;
 
 		DatagramPacket ackPacket = new DatagramPacket(buffer, buffer.length,
-				address, port);
+				address, ackPort);
 		socket.send(ackPacket);
 
 	}
