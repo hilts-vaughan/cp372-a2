@@ -30,11 +30,12 @@ public class ReliableSenderSocket extends DatagramSocket {
 	@Override
 	public void send(java.net.DatagramPacket packet) throws IOException {
 
-		// If we're using 0, forget it
+		// If the number is zero we dont simulate loss
 		if (this.m_reliabilityNumber != 0) {
+			//this generates a random integer between 1 and a value given at start up
 			int die = getRandomInt(1, this.m_reliabilityNumber);
-
-			// Pseudo-lossy
+			
+			// if the given value is a 1 then the packet is not actually sent
 			if (die == 1)
 				return;
 
@@ -48,6 +49,7 @@ public class ReliableSenderSocket extends DatagramSocket {
 	 * inclusive.
 	 */
 	private int getRandomInt(int min, int max) {
+		//this generates our random number
 		return this.m_random.nextInt(max - min + 1) + min;
 	}
 

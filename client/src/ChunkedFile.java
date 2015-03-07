@@ -54,6 +54,7 @@ public class ChunkedFile {
 		int length = b.length;
 
 		if (this.m_offset == this.m_data.length) {
+			//close down the link
 			System.out.println("It's over");
 		}
 
@@ -81,15 +82,17 @@ public class ChunkedFile {
 	 */
 	private static byte[] getBytesFromInputStream(FileInputStream is) {
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {
+			//make a new byte list of length buffer
 			byte[] buffer = new byte[BUFFER_LEN];
 
 			for (int len; (len = is.read(buffer)) != -1;)
 				os.write(buffer, 0, len);
-
+			//Force anything buffered to to written immediately
 			os.flush();
 
 			return os.toByteArray();
 		} catch (IOException e) {
+			//something went wrong return null
 			return null;
 		}
 	}

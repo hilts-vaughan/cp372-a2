@@ -31,25 +31,26 @@ public class Client {
 		for (String arg : args) {
 			System.out.println(arg);
 		}
-
+		//initilize the values
 		String hostAddress = "";
 		int portHost, portClient;
 		String fileName = "";
 		int reliabilityNumber = 0;
 		int windowSize = 0;
-		int timeout = 0;
+		int timeout = 200;
 		// Blank line
 		System.out.println("");
 
 		try {
-
+			//Put the parameters in the correct locations
 			hostAddress = args[0];
 			portHost = Integer.parseInt(args[1]);
 			portClient = Integer.parseInt(args[2]);
 			fileName = args[3];
 			reliabilityNumber = Integer.parseInt(args[4]);
 			windowSize = Integer.parseInt(args[5]);
-			timeout = Integer.parseInt(args[6]);
+			//timeout was passed as a parameter for easier testing
+			//timeout = Integer.parseInt(args[6]);
 		} catch (Exception e) {
 			System.out
 					.println("The given command line arguments were not valid. "
@@ -70,13 +71,11 @@ public class Client {
 			return;
 		}
 
-		//portClient = 7000;
 
-		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
-		// windowSize = 40;
 
 		long startTime = System.currentTimeMillis();
 
+		//set up a chunked file see chunked file class.
 		ChunkedFile chunkedFile;
 		try {
 			chunkedFile = new ChunkedFile(fileName);
@@ -90,7 +89,8 @@ public class Client {
 		ReliableSenderSocket socket;
 
 		try {
-			socket = new ReliableSenderSocket(3333, reliabilityNumber);
+			// is this the socket were working from?
+			socket = new ReliableSenderSocket(portHost, reliabilityNumber);
 		} catch (SocketException exception) {
 			System.out.println("The host could not be contacted. Aborting.");
 			return;
@@ -251,6 +251,11 @@ public class Client {
 
 	}
 
+	
+	
+	
+	
+	
 	public static class AckListener implements Runnable {
 
 		private Map<Byte, ReliablePacket> packetMap;
