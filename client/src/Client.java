@@ -33,7 +33,7 @@ public class Client {
 		}
 		//initilize the values
 		String hostAddress = "";
-		int portHost, portClient;
+		int portClient, portHost;
 		String fileName = "";
 		int reliabilityNumber = 0;
 		int windowSize = 0;
@@ -44,8 +44,8 @@ public class Client {
 		try {
 			//Put the parameters in the correct locations
 			hostAddress = args[0];
-			portHost = Integer.parseInt(args[1]);
-			portClient = Integer.parseInt(args[2]);
+			portClient = Integer.parseInt(args[1]);
+			portHost = Integer.parseInt(args[2]);
 			fileName = args[3];
 			reliabilityNumber = Integer.parseInt(args[4]);
 			windowSize = Integer.parseInt(args[5]);
@@ -90,7 +90,7 @@ public class Client {
 
 		try {
 			// is this the socket were working from?
-			socket = new ReliableSenderSocket(portHost, reliabilityNumber);
+			socket = new ReliableSenderSocket(portClient, reliabilityNumber);
 		} catch (SocketException exception) {
 			System.out.println("The host could not be contacted. Aborting.");
 			return;
@@ -106,9 +106,6 @@ public class Client {
 			socket.close();
 			return;
 		}
-
-		System.out.println("Sending to port " + portClient + " on port "
-				+ portHost);
 
 		Boolean transmitComplete = false;
 
@@ -159,7 +156,7 @@ public class Client {
 					// Send our data
 					try {
 						socket.send(new DatagramPacket(payload, payload.length,
-								IPAddress, portClient));
+								IPAddress, portHost));
 						chunksSent++;
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -205,7 +202,7 @@ public class Client {
 							+ "|| Retransmit: " + packet.getSequenceNumber());
 					byte[] payload = packet.getPacketPayload();
 					socket.send(new DatagramPacket(payload, payload.length,
-							IPAddress, portClient));
+							IPAddress, portHost));
 				}
 
 				// Reset timer
@@ -233,7 +230,7 @@ public class Client {
 		
 		DatagramPacket terminate = new DatagramPacket(
 				packet.getPacketPayload(), packet.getPacketPayload().length,
-				IPAddress, portClient);
+				IPAddress, portHost);
 
 		long previous = System.currentTimeMillis();
 		socket.send(terminate);
