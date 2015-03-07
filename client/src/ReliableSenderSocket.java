@@ -16,10 +16,11 @@ public class ReliableSenderSocket extends DatagramSocket {
 
 	private Random m_random = new Random();
 	private int m_reliabilityNumber = 0;
-
+	//Constructor for our socket
 	public ReliableSenderSocket(int port, int reliabilityNumber)
 			throws SocketException {
 		super(port);
+		//Pseudo reliability number set to this socket 
 		this.m_reliabilityNumber = reliabilityNumber;
 	}
 
