@@ -66,7 +66,7 @@ public class Server {
 		
 		int expectedSeqNum = 0;
 
-		// Loop forever
+		// Loop until we receive a -1 then we exit through a return
 		for (;;) {
 
 			// Allocate enough space for 128 bytes
@@ -79,14 +79,14 @@ public class Server {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
+			//get the data from the packet 
 			byte[] data = packet.getData();
-
+			//print to console so user knows whats going on
 			System.out.println("Packet recieved with sequence number: "
 					+ data[0]);
 			System.out.println("Expecting packet with sequence number: " + expectedSeqNum);
-			
-			// Just discard the packet if it's not what we expected
+
+			// If the sequence number is negative one were done
 			if (data[0] == -1) {
 				sendPacketAck(packet, socket, portAck, (byte) -1);
 				System.out.println("-1 received server shutting down");
@@ -94,12 +94,12 @@ public class Server {
 				return;
 
 			}
-
+			// Just discard the packet if it's not what we expected
 			if (data[0] != expectedSeqNum) {
 				sendPacketAck(packet, socket, portAck, (byte) (expectedSeqNum - 1) );
 				continue;
 			}
-
+			//write the package into the file
 			for (int i = 3; i < 3 + data[2]; i++) {
 				try {
 					out.write(data[i]);
@@ -128,7 +128,7 @@ public class Server {
 	 */
 	private static void sendPacketAck(DatagramPacket packet,
 			DatagramSocket socket, int ackPort, byte seqAcknowledge) throws IOException {
-		// Send to the port specified by the client getting acknowledgements
+		// Send to the port specified by the client getting acknowledgments
 		
 		InetSocketAddress socketAddress = (InetSocketAddress) packet.getSocketAddress();
 		InetAddress address = socketAddress.getAddress();
