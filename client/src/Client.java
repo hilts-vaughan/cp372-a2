@@ -1,4 +1,3 @@
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
@@ -8,8 +7,11 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 
 public class Client {
 
@@ -31,7 +33,7 @@ public class Client {
 		for (String arg : args) {
 			System.out.println(arg);
 		}
-		//initilize the values
+		// initilize the values
 		String hostAddress = "";
 		int portClient, portHost;
 		String fileName = "";
@@ -42,15 +44,15 @@ public class Client {
 		System.out.println("");
 
 		try {
-			//Put the parameters in the correct locations
+			// Put the parameters in the correct locations
 			hostAddress = args[0];
 			portClient = Integer.parseInt(args[1]);
 			portHost = Integer.parseInt(args[2]);
 			fileName = args[3];
 			reliabilityNumber = Integer.parseInt(args[4]);
 			windowSize = Integer.parseInt(args[5]);
-			//timeout was passed as a parameter for easier testing
-			//timeout = Integer.parseInt(args[6]);
+			// timeout was passed as a parameter for easier testing
+			// timeout = Integer.parseInt(args[6]);
 		} catch (Exception e) {
 			System.out
 					.println("The given command line arguments were not valid. "
@@ -64,18 +66,16 @@ public class Client {
 					.println("The window size must be 1-128 and a valid integer.");
 			return;
 		}
-		//Make sure reliability number is non-negative
+		// Make sure reliability number is non-negative
 		if (reliabilityNumber < 0) {
 			System.out
 					.println("The reliability number must be 0 or greater and a valid integer.");
 			return;
 		}
 
-
-
 		long startTime = System.currentTimeMillis();
 
-		//set up a chunked file see chunked file class.
+		// set up a chunked file see chunked file class.
 		ChunkedFile chunkedFile;
 		try {
 			chunkedFile = new ChunkedFile(fileName);
@@ -109,7 +109,7 @@ public class Client {
 
 		Boolean transmitComplete = false;
 
-		//initilize values for future calculations
+		// initilize values for future calculations
 		int chunksSent = 0;
 
 		byte seqNumber = 0;
@@ -214,27 +214,28 @@ public class Client {
 
 		}
 
-		//print when we start shutting down
+		// print when we start shutting down
 		System.out
 				.println("All "
 						+ chunksSent
 						+ " file chunks acknowledged. Awaiting shutdown confirmation...");
-		//need one more byte
+		// need one more byte
 		byte[] temp = new byte[1];
-		//Byte will contain a sequence number of -1
+		// Byte will contain a sequence number of -1
 		ReliablePacket packet = new ReliablePacket((byte) -1, temp,
 				System.currentTimeMillis());
 
 		unackedPackets.put((byte) -1, packet);
-		//Build our terminate packet
-		
+		// Build our terminate packet
+
 		DatagramPacket terminate = new DatagramPacket(
 				packet.getPacketPayload(), packet.getPacketPayload().length,
 				IPAddress, portHost);
 
 		long previous = System.currentTimeMillis();
 		socket.send(terminate);
-		//wait until we receive our final acknowledgement pulsing the terminate packet as we go
+		// wait until we receive our final acknowledgement pulsing the terminate
+		// packet as we go
 		while (unackedPackets.isEmpty() == false) {
 			if (System.currentTimeMillis() - previous > timeout) {
 				socket.send(terminate);
@@ -243,7 +244,7 @@ public class Client {
 		}
 
 		System.out.println("Shutdown acknowledged. Terminating client...");
-		//log the time
+		// log the time
 		float totalTime = (System.currentTimeMillis() - startTime)
 				/ (float) 1000;
 		System.out.println("Total Transmission Time: " + totalTime + "s");
@@ -253,10 +254,6 @@ public class Client {
 
 	}
 
-	
-	
-	
-	
 	// This is the Ack listener
 	public static class AckListener implements Runnable {
 
@@ -324,27 +321,256 @@ public class Client {
 
 				}
 
-
-				//update the oldest packet
+				// update the oldest packet
 				long newOldest = Long.MAX_VALUE;
-				//gets teh oldest packets time
+				// gets teh oldest packets time
 				for (ReliablePacket packet : packetMap.values()) {
 					if (packet.getTimestamp() < newOldest) {
 						newOldest = packet.getTimestamp();
 					}
 				}
-				//sets our time to the new oldest time.
+				// sets our time to the new oldest time.
 				Client.oldestPacketTime = newOldest;
 				if (ackPacket.getData()[0] == -1) {
 					return;
 				}
-				
-				
+
 				lock.release();
 				System.out.println("Ack recieved: " + ackPacket.getData()[0]);
 
 			}
 
+		}
+
+	}
+
+	/**
+	 * A chunked file returns a portion at a time when requested. The chunked
+	 * file itself for simplicity will read all the required data up front. This
+	 * approach is slightly naive as it will allocate a massive buffer up front
+	 * for the files but will reduce the I/O overhead as this simulation is
+	 * about networking.
+	 * 
+	 * @author Vaughan Hilts
+	 *
+	 */
+	public static class ChunkedFile {
+
+		// Make constants
+		private final int CHUNK_SIZE = 124;
+		private final static int BUFFER_LEN = 4096;
+
+		// Initialize values used in chunked file
+		private int m_offset = 0;
+		private byte[] m_data;
+		private FileInputStream m_internalStream;
+
+		public ChunkedFile(String fileName) throws FileNotFoundException {
+			// Get out stream ready for the incoming file provided to us
+			m_internalStream = new FileInputStream(fileName);
+			this.m_data = getBytesFromInputStream(this.m_internalStream);
+		}
+
+		/**
+		 * Checks to see if the chunked file has been read entirley by
+		 * "getByteChunk" already.
+		 * 
+		 * @return Returns true if the entire file has been read, false
+		 *         otherwise.
+		 */
+		public boolean isDataLeft() {
+			return this.m_offset != this.m_data.length;
+		}
+
+		/**
+		 * Returns the next few bytes in chunked increments available from the
+		 * filesystem to the caller.
+		 * 
+		 * @return The chunked bytes
+		 * @throws IOException
+		 *             Throws if an I/O error occurs for some reason
+		 */
+		public byte[] getByteChunk() throws IOException {
+			byte[] b = new byte[CHUNK_SIZE];
+			int length = b.length;
+
+			if (this.m_offset == this.m_data.length) {
+				// close down the link
+				System.out.println("It's over");
+			}
+
+			if (this.m_offset + b.length > this.m_data.length) {
+				// TODO: Poor man's implementation, throttle hard!
+				length = 1;
+				b = new byte[length];
+			}
+
+			// Copy our data into where need it to be
+			System.arraycopy(this.m_data, this.m_offset, b, 0, length);
+
+			this.m_offset += length;
+
+			return b;
+		}
+
+		/**
+		 * Given a file input streams, reads all the data and returns it as a
+		 * buffer.
+		 * 
+		 * @param is
+		 *            The input file stream to use and read all the data out of.
+		 * @return An array of byte data contained in the file
+		 */
+		private static byte[] getBytesFromInputStream(FileInputStream is) {
+			try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {
+				// make a new byte list of length buffer
+				byte[] buffer = new byte[BUFFER_LEN];
+
+				for (int len; (len = is.read(buffer)) != -1;)
+					os.write(buffer, 0, len);
+				// Force anything buffered to to written immediately
+				os.flush();
+
+				return os.toByteArray();
+			} catch (IOException e) {
+				// something went wrong return null
+				return null;
+			}
+		}
+
+	}
+
+	/**
+	 * A reliable packet implementation that encapsulates data for reliable file
+	 * transfer over UDP. The sequence number, payload, and timestamp are
+	 * recorded. Generally, a reliable packet is immutable with the exception of
+	 * the timestamp.
+	 * 
+	 * Upon retransmission, the timestamp should be updated so the timer can
+	 * ticked down.
+	 * 
+	 * @author Vaughan Hilts
+	 *
+	 */
+	public static class ReliablePacket {
+
+		// constants we may want to change later
+		private static final int HEADER_SIZE = 3;
+		private static final int BYTES = 255;
+		// Initialize the variables for the class
+		private byte m_sequenceNumber = 0;
+		private byte[] m_payload;
+		private long m_timestamp;
+
+		private long m_id = 0;
+		// a variable shared between the packets to easily differentiate between
+		// packets
+		private static long uId = 0;
+
+		public ReliablePacket(byte sequenceNumber, byte[] payload,
+				long timestamp) {
+			// builds the packet based on the given info
+			this.m_payload = payload;
+			this.m_sequenceNumber = sequenceNumber;
+			this.m_timestamp = timestamp;
+			this.m_id = uId++;
+		}
+
+		public byte getSequenceNumber() {
+			// gets the sequence number for a packet
+			return this.m_sequenceNumber;
+		}
+
+		public long getTimestamp() {
+			// Retrieves the time stamp on a packet
+			return this.m_timestamp;
+		}
+
+		public void setTimestamp(long time) {
+			// sets the time stamp on a packet
+			this.m_timestamp = time;
+		}
+
+		public long getUniqueId() {
+			// gets the id of a packet
+			return this.m_id;
+		}
+
+		public byte[] getPacketPayload() {
+			byte[] packetData = new byte[this.m_payload.length + HEADER_SIZE];
+			byte[] payload = this.m_payload;
+
+			// Copy the payload out
+			System.arraycopy(payload, 0, packetData, HEADER_SIZE,
+					payload.length);
+
+			// Shove in the sequence number
+			packetData[0] = this.m_sequenceNumber;
+
+			// TODO: Do something with this big of flag data; can use to signify
+			// ACK, TEARDOWN etc
+			// Of course, set it to something other than 255 as well
+			packetData[1] = (byte) BYTES;
+
+			packetData[2] = (byte) payload.length;
+
+			return packetData;
+		}
+
+	}
+
+	/**
+	 * Implements a reliable socket UDP datagram implementation. All of the
+	 * necessary implementation details are hidden within the socket class.
+	 * 
+	 * The only major details here are loss simulation.
+	 * 
+	 * @author Vaughan Hilts
+	 *
+	 */
+	public static class ReliableSenderSocket extends DatagramSocket {
+
+		private Random m_random = new Random();
+		private int m_reliabilityNumber = 0;
+
+		// Constructor for our socket
+		public ReliableSenderSocket(int port, int reliabilityNumber)
+				throws SocketException {
+			super(port);
+			// Pseudo reliability number set to this socket
+			this.m_reliabilityNumber = reliabilityNumber;
+		}
+
+		/**
+		 * A custom implementation of send which has the possibility of
+		 * sometimes "losing" a packet rather than actually sending it.
+		 */
+		@Override
+		public void send(java.net.DatagramPacket packet) throws IOException {
+
+			// If the number is zero we dont simulate loss
+			if (this.m_reliabilityNumber != 0) {
+				// this generates a random integer between 1 and a value given
+				// at start up
+				int die = getRandomInt(1, this.m_reliabilityNumber);
+
+				// if the given value is a 1 then the packet is not actually
+				// sent
+				if (die == 1)
+					return;
+
+			}
+
+			super.send(packet);
+		}
+
+		/**
+		 * A simple helper method to generate random integers between [min, max]
+		 * inclusive.
+		 */
+		private int getRandomInt(int min, int max) {
+			// this generates our random number
+			return this.m_random.nextInt(max - min + 1) + min;
 		}
 
 	}
