@@ -24,14 +24,16 @@ public class Server {
 
 	public static void main(String[] args) throws IOException {
 
+		String hostAddress = "";
 		int portAck = 0;
 		int portData = 0;
 		String fileNameSaveTo = "";
 
 		try {
-			portAck = Integer.parseInt(args[0]);
-			portData = Integer.parseInt(args[1]);
-			fileNameSaveTo = args[2];
+			hostAddress = args[0];
+			portAck = Integer.parseInt(args[1]);
+			portData = Integer.parseInt(args[2]);
+			fileNameSaveTo = args[3];
 		} catch (Exception exception) {
 			System.out.println("The arguments provided were not valid");
 			return;
