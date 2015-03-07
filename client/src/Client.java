@@ -21,7 +21,6 @@ public class Client {
 
 	// A 2s timeout is plenty
 	// TODO: Make this variable depending on network conditions
-	private int timeout = 300;
 
 	public static long oldestPacketTime = 0;
 
@@ -71,7 +70,7 @@ public class Client {
 			return;
 		}
 
-		portClient = 7000;
+		//portClient = 7000;
 
 		// TODO: Remove this... for now we set this to 1 for 'stop and wait'
 		// windowSize = 40;
