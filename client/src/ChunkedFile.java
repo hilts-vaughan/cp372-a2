@@ -16,11 +16,14 @@ import java.io.IOException;
  */
 public class ChunkedFile {
 
-	private FileInputStream m_internalStream;
+	//Make constants
 	private final int CHUNK_SIZE = 124;
+	private final static int BUFFER_LEN = 4096;
 
+	//Initialize values used in chunked file
 	private int m_offset = 0;
 	private byte[] m_data;
+	private FileInputStream m_internalStream;
 
 	public ChunkedFile(String fileName) throws FileNotFoundException {
 		// Get out stream ready for the incoming file provided to us
@@ -78,7 +81,7 @@ public class ChunkedFile {
 	 */
 	private static byte[] getBytesFromInputStream(FileInputStream is) {
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {
-			byte[] buffer = new byte[4096];
+			byte[] buffer = new byte[BUFFER_LEN];
 
 			for (int len; (len = is.read(buffer)) != -1;)
 				os.write(buffer, 0, len);
