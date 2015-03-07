@@ -58,13 +58,13 @@ public class Client {
 			return;
 		}
 
-		// Verify window size
+		// Verify window size is valid
 		if (windowSize < 1 || windowSize > 128) {
 			System.out
 					.println("The window size must be 1-128 and a valid integer.");
 			return;
 		}
-
+		//Make sure reliability number is non-negative
 		if (reliabilityNumber < 0) {
 			System.out
 					.println("The reliability number must be 0 or greater and a valid integer.");
@@ -112,6 +112,7 @@ public class Client {
 
 		Boolean transmitComplete = false;
 
+		//initilize values for future calculations
 		int chunksSent = 0;
 
 		byte seqNumber = 0;
@@ -216,23 +217,27 @@ public class Client {
 
 		}
 
+		//print when we start shutting down
 		System.out
 				.println("All "
 						+ chunksSent
 						+ " file chunks acknowledged. Awaiting shutdown confirmation...");
-
+		//need one more byte
 		byte[] temp = new byte[1];
-
+		//Byte will contain a sequence number of -1
 		ReliablePacket packet = new ReliablePacket((byte) -1, temp,
 				System.currentTimeMillis());
 
 		unackedPackets.put((byte) -1, packet);
+		//Build our terminate packet
+		
 		DatagramPacket terminate = new DatagramPacket(
 				packet.getPacketPayload(), packet.getPacketPayload().length,
 				IPAddress, portClient);
 
 		long previous = System.currentTimeMillis();
 		socket.send(terminate);
+		//wait until we receive our final acknowledgement pulsing the terminate packet as we go
 		while (unackedPackets.isEmpty() == false) {
 			if (System.currentTimeMillis() - previous > timeout) {
 				socket.send(terminate);
@@ -241,7 +246,7 @@ public class Client {
 		}
 
 		System.out.println("Shutdown acknowledged. Terminating client...");
-
+		//log the time
 		float totalTime = (System.currentTimeMillis() - startTime)
 				/ (float) 1000;
 		System.out.println("Total Transmission Time: " + totalTime + "s");
@@ -255,7 +260,7 @@ public class Client {
 	
 	
 	
-	
+	// This is the Ack listener
 	public static class AckListener implements Runnable {
 
 		private Map<Byte, ReliablePacket> packetMap;
@@ -322,23 +327,22 @@ public class Client {
 
 				}
 
-				// C'mon; two step OK
 
-				// We need to update the oldest packet
-
+				//update the oldest packet
 				long newOldest = Long.MAX_VALUE;
-
+				//gets teh oldest packets time
 				for (ReliablePacket packet : packetMap.values()) {
 					if (packet.getTimestamp() < newOldest) {
 						newOldest = packet.getTimestamp();
 					}
 				}
-
+				//sets our time to the new oldest time.
 				Client.oldestPacketTime = newOldest;
 				if (ackPacket.getData()[0] == -1) {
 					return;
 				}
-
+				
+				
 				lock.release();
 				System.out.println("Ack recieved: " + ackPacket.getData()[0]);
 
