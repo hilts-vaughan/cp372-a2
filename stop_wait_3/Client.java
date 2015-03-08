@@ -14,20 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 
 public class Client {
-	/**
-	 * Client side implementation.
-	 * 
-	 * A simple file transfer client that will load bytes from from files
-	 *  and send them to a server.
-	 * 
-	 * The Client is relatively simple. It uses UDP to continually send packets
-	 * It resends packets until it receives an ack for each sequence number/unique
-	 * identifier for the packets that have been created.
-	 * 
-	 * @author Vaughan Hilts, Brandon Smith
-	 *
-	 */
-	// We need a way of storing packets that are yet to receive acknowledge;
+
+	// We need a way of storing packets that are yet to recieve acknowledge;
 	// we'll do so here
 	private static Map<Byte, ReliablePacket> unackedPackets = new ConcurrentHashMap<Byte, ReliablePacket>();
 
@@ -45,7 +33,7 @@ public class Client {
 		for (String arg : args) {
 			System.out.println(arg);
 		}
-		// Initialize the values
+		// initilize the values
 		String hostAddress = "";
 		int portClient, portHost;
 		String fileName = "";
@@ -62,9 +50,6 @@ public class Client {
 			portHost = Integer.parseInt(args[2]);
 			fileName = args[3];
 			reliabilityNumber = Integer.parseInt(args[4]);
-			windowSize = Integer.parseInt(args[5]);
-			// timeout was passed as a parameter for easier testing
-			// timeout = Integer.parseInt(args[6]);
 		} catch (Exception e) {
 			System.out
 					.println("The given command line arguments were not valid. "
@@ -72,12 +57,8 @@ public class Client {
 			return;
 		}
 
-		// Verify window size is valid
-		if (windowSize < 1 || windowSize > 128) {
-			System.out
-					.println("The window size must be 1-128 and a valid integer.");
-			return;
-		}
+		windowSize = 1;
+
 		// Make sure reliability number is non-negative
 		if (reliabilityNumber < 0) {
 			System.out
@@ -87,7 +68,7 @@ public class Client {
 
 		long startTime = System.currentTimeMillis();
 
-		// set up a file to be split into chunks.
+		// set up a chunked file see chunked file class.
 		ChunkedFile chunkedFile;
 		try {
 			chunkedFile = new ChunkedFile(fileName);
@@ -118,12 +99,12 @@ public class Client {
 			socket.close();
 			return;
 		}
-		//this is our exit condition
+
 		Boolean transmitComplete = false;
 
-		// Initialize value to keep track of how many chunks have been sent 
+		// initilize values for future calculations
 		int chunksSent = 0;
-		//Initialize the first sequence number to zero
+
 		byte seqNumber = 0;
 
 		Thread ack_listener = new Thread(
@@ -209,9 +190,7 @@ public class Client {
 
 				// Resend our payload
 				for (ReliablePacket packet : packets) {
-
 					packet.setTimestamp(System.currentTimeMillis());
-					//print the time in seconds
 					System.out.println(System.currentTimeMillis() / 10000
 							+ "|| Retransmit: " + packet.getSequenceNumber());
 					byte[] payload = packet.getPacketPayload();
@@ -365,12 +344,12 @@ public class Client {
 	 * for the files but will reduce the I/O overhead as this simulation is
 	 * about networking.
 	 * 
-	 * @author Vaughan Hilts
+	 * @author Vaughan Hilts & Brandon Smith
 	 *
 	 */
 	public static class ChunkedFile {
 
-		// Setup constants
+		// Make constants
 		private final int CHUNK_SIZE = 124;
 		private final static int BUFFER_LEN = 4096;
 
@@ -463,7 +442,7 @@ public class Client {
 	 * Upon retransmission, the timestamp should be updated so the timer can
 	 * ticked down.
 	 * 
-	 * @author Vaughan Hilts
+	 * @author Vaughan Hilts & Brandon Smith
 	 *
 	 */
 	public static class ReliablePacket {
@@ -539,7 +518,7 @@ public class Client {
 	 * 
 	 * The only major details here are loss simulation.
 	 * 
-	 * @author Vaughan Hilts
+	 * @author Vaughan Hilts & Brandon Smith
 	 *
 	 */
 	public static class ReliableSenderSocket extends DatagramSocket {

@@ -20,10 +20,10 @@ import time
 
 s = ServerProxy('http://104.236.62.77:8000', verbose=True)
 times=[]
-FILES=["test_short.txt ","accelerator.jpg ", "test_medium.txt ","test_short.txt ","test_long.txt ","test_border.txt "]
-RELIABILITYNUM=["100 ","500 ","1000 "]
-WINDOWSIZE=["2 ", "10 ", "40 ", "80 "]
-TIMEOUTS = ["100 ","200 ", "300 "]
+FILES=["test_short.txt ","accelerator.jpg ", "test_medium.txt ","homura.png ","test_long.txt ","test_border.txt "]
+RELIABILITYNUM=["0 ","5 ","100 "]
+WINDOWSIZE=["1 ", "10 ", "40 ", "80 "]
+TIMEOUTS = ["100 ","300 ", "500 "]
 f = open( "results.csv", "w+", encoding="utf-8" )        
 for windowNum in WINDOWSIZE:
     for reliab in RELIABILITYNUM:
