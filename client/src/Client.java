@@ -27,7 +27,7 @@ public class Client {
 	 * @author Vaughan Hilts, Brandon Smith
 	 *
 	 */
-	// We need a way of storing packets that are yet to recieve acknowledge;
+	// We need a way of storing packets that are yet to receive acknowledge;
 	// we'll do so here
 	private static Map<Byte, ReliablePacket> unackedPackets = new ConcurrentHashMap<Byte, ReliablePacket>();
 
@@ -45,7 +45,7 @@ public class Client {
 		for (String arg : args) {
 			System.out.println(arg);
 		}
-		// initilize the values
+		// Initialize the values
 		String hostAddress = "";
 		int portClient, portHost;
 		String fileName = "";
@@ -87,7 +87,7 @@ public class Client {
 
 		long startTime = System.currentTimeMillis();
 
-		// set up a chunked file see chunked file class.
+		// set up a file to be split into chunks.
 		ChunkedFile chunkedFile;
 		try {
 			chunkedFile = new ChunkedFile(fileName);
@@ -118,12 +118,12 @@ public class Client {
 			socket.close();
 			return;
 		}
-
+		//this is our exit condition
 		Boolean transmitComplete = false;
 
-		// initilize values for future calculations
+		// Initialize value to keep track of how many chunks have been sent 
 		int chunksSent = 0;
-
+		//Initialize the first sequence number to zero
 		byte seqNumber = 0;
 
 		Thread ack_listener = new Thread(
@@ -209,7 +209,9 @@ public class Client {
 
 				// Resend our payload
 				for (ReliablePacket packet : packets) {
+
 					packet.setTimestamp(System.currentTimeMillis());
+					//print the time in seconds
 					System.out.println(System.currentTimeMillis() / 10000
 							+ "|| Retransmit: " + packet.getSequenceNumber());
 					byte[] payload = packet.getPacketPayload();
@@ -368,7 +370,7 @@ public class Client {
 	 */
 	public static class ChunkedFile {
 
-		// Make constants
+		// Setup constants
 		private final int CHUNK_SIZE = 124;
 		private final static int BUFFER_LEN = 4096;
 
