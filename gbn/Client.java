@@ -13,6 +13,19 @@ import java.util.concurrent.Semaphore;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 
+/**
+	 * Client side implementation.
+	 * 
+	 * A sample file transfer client that will load bytes from from files
+	 *  and send them to a server.
+	 * 
+	 * The Client is relatively simple. It uses UDP to continually send packets
+	 * It resends packets until it receives an ack for each unique segment of data
+	 * that has been sent.
+	 * 
+	 * @author Vaughan Hilts & Brandon Smith
+	 *
+	 */
 public class Client {
 
 	// We need a way of storing packets that are yet to recieve acknowledge;
