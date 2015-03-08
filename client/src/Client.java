@@ -14,7 +14,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 
 public class Client {
-
+	/**
+	 * Client side implementation.
+	 * 
+	 * A simple file transfer client that will load bytes from from files
+	 *  and send them to a server.
+	 * 
+	 * The Client is relatively simple. It uses UDP to continually send packets
+	 * It resends packets until it receives an ack for each sequence number/unique
+	 * identifier for the packets that have been created.
+	 * 
+	 * @author Vaughan Hilts, Brandon Smith
+	 *
+	 */
 	// We need a way of storing packets that are yet to recieve acknowledge;
 	// we'll do so here
 	private static Map<Byte, ReliablePacket> unackedPackets = new ConcurrentHashMap<Byte, ReliablePacket>();
