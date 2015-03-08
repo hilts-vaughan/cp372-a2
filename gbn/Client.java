@@ -351,7 +351,7 @@ public class Client {
 	 * for the files but will reduce the I/O overhead as this simulation is
 	 * about networking.
 	 * 
-	 * @author Vaughan Hilts
+	 * @author Vaughan Hilts & Brandon Smith
 	 *
 	 */
 	public static class ChunkedFile {
@@ -449,7 +449,7 @@ public class Client {
 	 * Upon retransmission, the timestamp should be updated so the timer can
 	 * ticked down.
 	 * 
-	 * @author Vaughan Hilts
+	 * @author Vaughan Hilts & Brandon Smith
 	 *
 	 */
 	public static class ReliablePacket {
@@ -525,7 +525,7 @@ public class Client {
 	 * 
 	 * The only major details here are loss simulation.
 	 * 
-	 * @author Vaughan Hilts
+	 * @author Vaughan Hilts & Brandon Smith
 	 *
 	 */
 	public static class ReliableSenderSocket extends DatagramSocket {

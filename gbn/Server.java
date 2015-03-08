@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
  * The server is a fairly simple implementation which will simply discard
  * packets if it can't get what it wants
  * 
- * @author Vaughan Hilts
+ * @author Vaughan Hilts & Brandon Smith
  *
  */
 public class Server {
